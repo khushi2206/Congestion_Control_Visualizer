@@ -29,6 +29,16 @@ const NETWORK_PROFILES: NetworkProfile[] = [
   { id: 'mars', name: 'Deep Space', lossRate: 40, congestion: 95, speed: 0.4, description: 'Extreme distance, catastrophic loss.' },
 ]
 
+const ProfileIcon = ({ id }: { id: string }) => {
+  switch (id) {
+    case 'fiber': return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    case 'starlink': return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+    case 'cellular': return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 20h.01"/><path d="M7 20v-4"/><path d="M12 20v-8"/><path d="M17 20V8"/><path d="M22 20V4"/></svg>
+    case 'mars': return <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2v20"/><path d="M2 12h20"/><path d="M12 12l5.5-5.5"/></svg>
+    default: return null
+  }
+}
+
 // Inline SVG components
 const ServerIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
@@ -58,7 +68,7 @@ function App() {
   const [selectedType, setSelectedType] = useState<'all' | 'voice' | 'video' | 'data'>('all')
   
   // Chaos Engine State
-  const [activeTab, setActiveTab] = useState<'simulation' | 'chaos'>('simulation')
+  const [activeTab, setActiveTab] = useState<'simulation' | 'chaos' | 'history'>('simulation')
   const [isChaosEnabled, setIsChaosEnabled] = useState(false)
   const [activeEvent, setActiveEvent] = useState<{ type: string, label: string, color: string } | null>(null)
   const [eventLog, setEventLog] = useState<{ time: string, msg: string }[]>([])
@@ -264,16 +274,7 @@ function App() {
     setQueuedPackets((prev) => prev + packetTarget)
   }
 
-  const applyProfile = (profile: NetworkProfile) => {
-    setActiveProfile(profile.id)
-    setStats(prev => ({ ...prev, lossRate: profile.lossRate, congestion: profile.congestion }))
-    setStats((prev) => ({
-      ...prev,
-      lossRate: profile.lossRate,
-      congestion: profile.congestion,
-    }))
-    setSpeed(profile.speed)
-  }
+
 
 
   return (
@@ -304,19 +305,13 @@ function App() {
               >
                 Chaos Lab
               </button>
-            </div>
-          </div>
-          <div className="profile-selector">
-            {NETWORK_PROFILES.map((profile) => (
               <button
-                key={profile.id}
-                className={`profile-btn ${activeProfile === profile.id ? 'active' : ''}`}
-                onClick={() => applyProfile(profile)}
-                title={profile.description}
+                className={`tab-btn ${activeTab === 'history' ? 'active' : ''}`}
+                onClick={() => setActiveTab('history')}
               >
-                {profile.name}
+                Event Log
               </button>
-            ))}
+            </div>
           </div>
         </div>
       </header>
@@ -381,51 +376,44 @@ function App() {
                 </div>
                 <div className="health-telemetry-grid">
                   <div className="telemetry-card">
-                    <div className="card-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
                     <div className="card-info">
                       <span className="telemetry-label">Throughput</span>
                       <span className="telemetry-value text-blue">{stats.throughput} pkts/s</span>
                     </div>
                   </div>
                   <div className="telemetry-card">
-                    <div className="card-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
                     <div className="card-info">
                       <span className="telemetry-label">Net Latency</span>
                       <span className="telemetry-value text-warning">{stats.delay}ms</span>
                     </div>
                   </div>
                   <div className="telemetry-card">
-                    <div className="card-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
                     <div className="card-info">
                       <span className="telemetry-label">Delivered</span>
                       <span className="telemetry-value text-green">{stats.delivered} pkts</span>
                     </div>
                   </div>
                   <div className="telemetry-card">
-                    <div className="card-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div>
                     <div className="card-info">
                       <span className="telemetry-label">Lost Total</span>
                       <span className="telemetry-value text-red">{lostTotal} pkts</span>
                     </div>
                   </div>
                   <div className="telemetry-card">
-                    <div className="card-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
                     <div className="card-info">
                       <span className="telemetry-label">In Transit</span>
                       <span className="telemetry-value text-blue">{packets.length} pkts</span>
                     </div>
                   </div>
                   <div className="telemetry-card">
-                    <div className="card-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg></div>
                     <div className="card-info">
                       <span className="telemetry-label">ssthresh</span>
                       <span className="telemetry-value text-warning">{ssthresh}</span>
                     </div>
                   </div>
                   <div className="telemetry-card wide">
-                    <div className="card-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></div>
                     <div className="card-info">
-                      <span className="telemetry-label">Status</span>
+                      <span className="telemetry-label">System Status</span>
                       <span className="telemetry-value text-blue">{congestionState}</span>
                     </div>
                   </div>
@@ -522,6 +510,9 @@ function App() {
                             setSpeed(profile.speed);
                           }}
                         >
+                          <div className="env-card-icon">
+                            <ProfileIcon id={profile.id} />
+                          </div>
                           <span className="env-name">{profile.name}</span>
                         </button>
                       ))}
@@ -584,7 +575,7 @@ function App() {
               </div>
             </div>
           </div>
-        ) : (
+        ) : activeTab === 'chaos' ? (
           <div className="tab-content chaos-tab">
             <div className="chaos-grid">
               <div className="chaos-controls glass-panel">
@@ -613,17 +604,6 @@ function App() {
                   </div>
                 </div>
               </div>
-              <div className="chaos-log glass-panel">
-                <h3>Event History Log</h3>
-                <div className="log-entries">
-                  {eventLog.length === 0 && <p className="text-muted">No events recorded.</p>}
-                  {eventLog.map((log, i) => (
-                    <div key={i} className="log-entry">
-                      <span className="log-time">[{log.time}]</span> {log.msg}
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
             <div className="chaos-footer glass-panel">
               <div className="control-item">
@@ -650,6 +630,20 @@ function App() {
                 </button>
               </div>
             </div>
+          </div>
+        ) : (
+          <div className="tab-content history-tab">
+            <div className="chaos-log glass-panel full-width">
+                <h3>Event History Log</h3>
+                <div className="log-entries">
+                  {eventLog.length === 0 && <p className="text-muted">No events recorded.</p>}
+                  {eventLog.map((log, i) => (
+                    <div key={i} className="log-entry">
+                      <span className="log-time">[{log.time}]</span> {log.msg}
+                    </div>
+                  ))}
+                </div>
+              </div>
           </div>
         )}
       </main>

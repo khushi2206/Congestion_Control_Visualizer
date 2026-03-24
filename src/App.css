@@ -152,8 +152,8 @@ html, body, #root {
 }
 
 .chaos-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 1.5rem;
   margin-bottom: 1.5rem;
 }
@@ -207,15 +207,22 @@ html, body, #root {
 .chaos-trigger.cut:hover { border-color: #ffffff; color: #ffffff; box-shadow: 0 0 15px rgba(255,255,255,0.3); }
 
 .chaos-log {
-  padding: 1.5rem;
+  padding: 2rem;
   display: flex;
   flex-direction: column;
+  min-height: 400px;
+}
+
+.chaos-log.full-width {
+  width: 100%;
+  min-height: 600px;
 }
 
 .log-entries {
   flex: 1;
   overflow-y: auto;
-  max-height: 300px;
+  min-height: 300px;
+  max-height: 500px;
   background: rgba(0,0,0,0.2);
   border-radius: 8px;
   padding: 1rem;
@@ -419,37 +426,7 @@ input:checked + .slider:before { transform: translateX(22px); }
   margin: 0 auto;
 }
 
-.profile-selector {
-  display: flex;
-  gap: 0.5rem;
-}
 
-.profile-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--color-glass-border);
-  color: var(--color-text-muted);
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.profile-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.3);
-  color: #fff;
-}
-
-.profile-btn.active {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: #000;
-  box-shadow: 0 0 15px var(--color-primary-glow);
-}
 
 .neon-text {
   font-size: 2.2rem;
@@ -811,28 +788,49 @@ input:checked + .slider:before { transform: translateX(22px); }
 .telemetry-card {
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid var(--color-glass-border);
-  border-radius: 8px;
-  padding: 0.75rem;
+  border-radius: 12px;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
-  transition: all 0.2s ease;
-  min-height: 80px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 130px;
   justify-content: center;
   text-align: center;
 }
 
 .telemetry-card.wide {
   grid-column: span 3;
-  flex-direction: row;
-  min-height: auto;
-  padding: 0.5rem 1rem;
+  flex-direction: column;
+  min-height: 110px;
+  padding: 1.25rem;
+}
+
+.card-icon-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--color-glass-border);
+  border-radius: 12px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+  color: var(--color-primary);
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+}
+
+.telemetry-card:hover .card-icon-box {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 15px var(--color-primary-glow);
+  transform: scale(1.05);
 }
 
 .telemetry-card:hover {
   border-color: rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.02);
+  background: rgba(255,255,255,0.05);
 }
 
 .card-icon {
@@ -1078,24 +1076,55 @@ input:checked + .slider:before { transform: translateX(22px); }
 .env-card {
   background: rgba(15, 23, 42, 0.4);
   border: 1px solid var(--color-glass-border);
-  border-radius: 10px;
-  padding: 0.75rem;
+  border-radius: 14px;
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--color-text-main);
+  min-height: 120px;
+}
+
+.env-card-icon {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-glass-border);
+  border-radius: 12px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  color: var(--color-text-main);
+  color: var(--color-text-muted);
+  transition: all 0.3s ease;
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
 }
 
 .env-card:hover {
   background: rgba(56, 189, 248, 0.1);
   border-color: var(--color-primary);
-  transform: translateY(-2px);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+.env-card:hover .env-card-icon {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  transform: scale(1.1);
 }
 
 .env-card.active {
-  background: rgba(56, 189, 248, 0.2);
+  background: rgba(56, 189, 248, 0.15);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 20px var(--color-primary-glow);
+}
+
+.env-card.active .env-card-icon {
+  background: var(--color-primary);
+  color: #000;
   border-color: var(--color-primary);
   box-shadow: 0 0 15px var(--color-primary-glow);
 }
