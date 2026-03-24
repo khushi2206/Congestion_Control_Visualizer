@@ -58,6 +58,7 @@ function App() {
   const [ssthresh, setSsthresh] = useState(64)
   const [history, setHistory] = useState<{cwnd: number, throughput: number}[]>([])
   const [activeProfile, setActiveProfile] = useState<string | null>(null)
+  const [selectedType, setSelectedType] = useState<'all' | 'voice' | 'video' | 'data'>('all')
 
   // Use refs for the simulation loop to prevent erratic interval resets
   const statsRef = useRef(stats)
@@ -90,16 +91,14 @@ function App() {
       while (queuedRef.current > 0 && activeCount < Math.floor(cwndRef.current)) {
         setQueuedPackets((prev) => Math.max(0, prev - 1))
         
-        // Calculate loss exactly once at creation
-        const baseLoss = statsRef.current.lossRate / 100
-        const congestionLoss = (statsRef.current.congestion / 100) * 0.2
-        const totalLossProb = Math.min(1.0, baseLoss + congestionLoss)
-        const willBeLost = Math.random() < totalLossProb
-        const dropProgress = willBeLost ? 30 + Math.random() * 40 : 200 // Drop anywhere 30-70
-
-        // QoS Logic: Assign a random traffic type
-        const rand = Math.random()
-        const type: 'voice' | 'video' | 'data' = rand < 0.2 ? 'voice' : rand < 0.6 ? 'video' : 'data'
+        // QoS Logic: Assign a random or selected traffic type
+        let type: 'voice' | 'video' | 'data'
+        if (selectedType === 'all') {
+            const rand = Math.random()
+            type = rand < 0.33 ? 'voice' : rand < 0.66 ? 'video' : 'data'
+        } else {
+            type = selectedType as 'voice' | 'video' | 'data'
+        }
 
         // Calculate loss exactly once at creation
         const baseLoss = statsRef.current.lossRate / 100
@@ -107,8 +106,8 @@ function App() {
         let totalLossProb = Math.min(1.0, baseLoss + congestionLoss)
 
         // Apply Priority Resistance (QoS)
-        if (type === 'voice') totalLossProb *= 0.1 // 90% resistance
-        else if (type === 'video') totalLossProb *= 0.5 // 50% resistance
+        if (type === 'voice') totalLossProb *= 0.05 // 95% resistance
+        else if (type === 'video') totalLossProb *= 0.4 // 60% resistance
 
         const willBeLost = Math.random() < totalLossProb
         const dropProgress = willBeLost ? 30 + Math.random() * 40 : 200 // Drop anywhere 30-70
@@ -433,6 +432,16 @@ function App() {
                   <span className="queued">Queued: {queuedPackets}</span>
                 </div>
                 <div className="input-row">
+                  <select 
+                    value={selectedType} 
+                    onChange={(e) => setSelectedType(e.target.value as any)}
+                    className="glass-input type-select"
+                  >
+                    <option value="all">Mix Traffic</option>
+                    <option value="voice">💓 Voice Only</option>
+                    <option value="video">🎬 Video Only</option>
+                    <option value="data">📦 Bulk Data Only</option>
+                  </select>
                   <input
                     type="number"
                     min="1"
@@ -442,7 +451,7 @@ function App() {
                     className="glass-input num-input"
                   />
                   <button className="neon-button primary" onClick={queuePacketBatch}>
-                    Deploy Packets
+                    Deploy
                   </button>
                 </div>
               </div>
